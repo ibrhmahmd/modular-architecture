@@ -12,8 +12,10 @@ Clone, then link each skill into the folders your agents read:
 
 ```sh
 git clone <this repo> ~/Desktop/agent-skills
-for dir in ~/.agents/skills ~/.claude/skills ~/.config/opencode/skills; do
+for dir in ~/.agents/skills ~/.claude/skills; do
   mkdir -p "$dir"
   ln -sfn ~/Desktop/agent-skills/modular-architecture "$dir/modular-architecture"
 done
 ```
+
+OpenCode also reads `~/.agents/skills` and `~/.claude/skills`, so these two links cover Claude Code and OpenCode.
