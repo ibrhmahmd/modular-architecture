@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A cross-module write in one unit of work</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #f5f5f5;
+      --color-ink:     #2d3142;
+      --color-muted:   #4f5d75;
+      --color-accent:  #bf4520;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', 'Noto Serif', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1200px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 960px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Sequence · decisions D3, D6, D7</p>
+    <h1>A cross-module write in one unit of work</h1>
+    <div class="diagram-container">
+      <svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="use-case-sequence-title use-case-sequence-desc">
+        <title id="use-case-sequence-title">A cross-module write in one unit of work</title>
+        <desc id="use-case-sequence-desc">Sequence of a write workflow in the highest module: the HTTP route builds one unit of work per request, the use case writes through a lower module's facade and its own repositories on that same unit of work, commits once, and only then calls its notifier port.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bf4520"/></marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+          <marker id="arrow-open" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polyline points="0 0, 8 3, 0 6" fill="none" stroke="#4f5d75" stroke-width="1.2"/></marker>
+        </defs>
+        <rect width="100%" height="100%" fill="#f5f5f5"/>
+        <line x1="120" y1="96" x2="120" y2="456" stroke="rgba(45,49,66,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="300" y1="96" x2="300" y2="456" stroke="rgba(45,49,66,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="480" y1="96" x2="480" y2="456" stroke="rgba(45,49,66,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="660" y1="96" x2="660" y2="456" stroke="rgba(45,49,66,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="840" y1="96" x2="840" y2="456" stroke="rgba(45,49,66,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="116" y="128" width="8" height="304" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+        <rect x="296" y="164" width="8" height="268" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+        <rect x="476" y="200" width="8" height="88" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+        <rect x="836" y="380" width="8" height="24" fill="rgba(45,49,66,0.06)" stroke="#4f5d75" stroke-width="0.8"/>
+        <line x1="124" y1="136" x2="660" y2="136" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="364" y="116" width="52" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="390" y="125" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">OPEN UOW</text>
+        <line x1="124" y1="172" x2="296" y2="172" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="184" y="152" width="52" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="210" y="161" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">RUN(UOW)</text>
+        <line x1="304" y1="208" x2="476" y2="208" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="356" y="188" width="68" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="390" y="197" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">FACADE CALL</text>
+        <line x1="484" y1="244" x2="660" y2="244" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="530" y="224" width="84" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="572" y="233" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">WRITE OWN ROWS</text>
+        <line x1="476" y1="280" x2="304" y2="280" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <rect x="378" y="260" width="24" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="390" y="269" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">DTO</text>
+        <line x1="304" y1="316" x2="660" y2="316" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="528" y="296" width="84" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="570" y="305" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">WRITE OWN ROWS</text>
+        <line x1="304" y1="352" x2="660" y2="352" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <rect x="544" y="332" width="52" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="570" y="341" fill="#bf4520" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">COMMIT()</text>
+        <line x1="304" y1="388" x2="836" y2="388" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow-open)"/>
+        <rect x="730" y="368" width="40" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="750" y="377" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">NOTIFY</text>
+        <line x1="296" y1="424" x2="124" y2="424" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <rect x="178" y="404" width="64" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="210" y="413" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">RESULT DTO</text>
+        <rect x="44" y="40" width="152" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="44" y="40" width="152" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="120" y="68" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">HTTP route</text>
+        <text x="120" y="83" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">billing/api/</text>
+        <rect x="224" y="40" width="152" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="224" y="40" width="152" height="56" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+        <text x="300" y="68" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Use case</text>
+        <text x="300" y="83" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">billing/services/</text>
+        <rect x="404" y="40" width="152" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="404" y="40" width="152" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="480" y="68" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Lower facade</text>
+        <text x="480" y="83" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">people/__init__.py</text>
+        <rect x="584" y="40" width="152" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="584" y="40" width="152" height="56" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <text x="660" y="68" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Unit of work</text>
+        <text x="660" y="83" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">one DB session</text>
+        <rect x="764" y="40" width="152" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="764" y="40" width="152" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="840" y="68" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Notifier port</text>
+        <text x="840" y="83" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">adapter, wired at root</text>
+        <text x="904" y="500" fill="#2d3142" font-size="14" font-style="italic" font-family="'Instrument Serif', 'Noto Serif', serif" text-anchor="end">any step raises: rollback, nothing saved, nothing sent</text>
+        <path d="M 672,486 Q 666,470 660,460" fill="none" stroke="rgba(45,49,66,0.4)" stroke-width="1" stroke-dasharray="4,3"/>
+        <circle cx="660" cy="458" r="2" fill="#2d3142"/>
+        <line x1="40" y1="524" x2="920" y2="524" stroke="rgba(45,49,66,0.1)" stroke-width="0.8"/>
+        <text x="40" y="544" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.18em">LEGEND</text>
+        <line x1="40" y1="564" x2="68" y2="564" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <text x="76" y="568" fill="#4f5d75" font-size="8.5" font-family="'Geist', system-ui, sans-serif">Synchronous call</text>
+        <line x1="184" y1="564" x2="212" y2="564" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <text x="220" y="568" fill="#4f5d75" font-size="8.5" font-family="'Geist', system-ui, sans-serif">Return</text>
+        <line x1="300" y1="564" x2="328" y2="564" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow-open)"/>
+        <text x="336" y="568" fill="#4f5d75" font-size="8.5" font-family="'Geist', system-ui, sans-serif">After-commit notification</text>
+        <line x1="492" y1="564" x2="520" y2="564" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <text x="528" y="568" fill="#4f5d75" font-size="8.5" font-family="'Geist', system-ui, sans-serif">The one commit, by the outermost use case</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
